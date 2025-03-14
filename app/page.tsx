@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import * as XLSX from 'xlsx'
-import ExcelTable from './components/ExcelTable'
 import AnalyticsResults from './components/AnalyticsResults'
 import { processData, performAnalytics } from './utils/analytics'
 
@@ -163,15 +162,16 @@ export default function Home() {
         </div>
 
         {analyticsResults && (
-          <AnalyticsResults
-            orgTypeCrossTab={analyticsResults.orgTypeCrossTab}
-            intlCrossTab={analyticsResults.intlCrossTab}
-            countryCrossTab={analyticsResults.countryCrossTab}
-            orgTypePercentages={analyticsResults.orgTypePercentages}
-          />
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Analytics Results</h2>
+            <AnalyticsResults
+              orgTypeCrossTab={analyticsResults.orgTypeCrossTab}
+              intlCrossTab={analyticsResults.intlCrossTab}
+              countryCrossTab={analyticsResults.countryCrossTab}
+              orgTypePercentages={analyticsResults.orgTypePercentages}
+            />
+          </div>
         )}
-
-
       </div>
     </main>
   )
