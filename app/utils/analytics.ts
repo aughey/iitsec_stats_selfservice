@@ -4,14 +4,14 @@ export interface CrossTabResult {
 
 export interface ProcessedData {
     headers: string[]
-    data: any[][]
-    records: Record<string, any>[]
+    data: (string | number)[][]
+    records: Record<string, string | number>[]
 }
 
-export const processData = (headers: string[], data: any[][]): ProcessedData => {
+export const processData = (headers: string[], data: (string | number)[][]): ProcessedData => {
     // Convert 2D array to array of objects
     const records = data.map(row => {
-        const record: Record<string, any> = {}
+        const record: Record<string, string | number> = {}
         headers.forEach((header, index) => {
             record[header] = row[index]
         })
@@ -21,12 +21,12 @@ export const processData = (headers: string[], data: any[][]): ProcessedData => 
     return { headers, data, records }
 }
 
-export const calculateCrossTab = (records: Record<string, any>[], key1: string, key2: string): CrossTabResult => {
+export const calculateCrossTab = (records: Record<string, string | number>[], key1: string, key2: string): CrossTabResult => {
     const result: CrossTabResult = {}
 
     records.forEach(record => {
-        const val1 = record[key1]
-        const val2 = record[key2]
+        const val1 = String(record[key1])
+        const val2 = String(record[key2])
 
         if (val1 && val2) {
             if (!result[val1]) {
@@ -42,12 +42,12 @@ export const calculateCrossTab = (records: Record<string, any>[], key1: string, 
     return result
 }
 
-export const calculatePercentages = (records: Record<string, any>[], key: string): { [key: string]: number } => {
+export const calculatePercentages = (records: Record<string, string | number>[], key: string): { [key: string]: number } => {
     const counts: { [key: string]: number } = {}
     let total = 0
 
     records.forEach(record => {
-        const value = record[key]
+        const value = String(record[key])
         if (value) {
             counts[value] = (counts[value] || 0) + 1
             total++
@@ -67,7 +67,7 @@ export const performAnalytics = (processedData: ProcessedData) => {
 
     const orgTypeCrossTab = calculateCrossTab(records, 'Assigned_Subcommittee', 'Org_Type')
     const intlCrossTab = calculateCrossTab(records, 'International(Y/N)', 'Assigned_Subcommittee')
-    const countryCrossTab = calculateCrossTab(records, 'Country', 'Assigned_Subcommittee')
+    const countryCrossTab = calculateCrossTab(records, 'Origin_Country', 'Assigned_Subcommittee')
     const orgTypePercentages = calculatePercentages(records, 'Org_Type')
 
     return {

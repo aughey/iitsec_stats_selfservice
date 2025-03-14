@@ -9,7 +9,7 @@ import { processData, performAnalytics } from './utils/analytics'
 
 interface ExcelData {
   headers: string[]
-  data: any[][]
+  data: (string | number)[][]
 }
 
 // Column mappings from Python code
@@ -90,7 +90,7 @@ const columnMappings: { [key: string]: string } = {
 
 export default function Home() {
   const [excelData, setExcelData] = useState<ExcelData | null>(null)
-  const [analyticsResults, setAnalyticsResults] = useState<any>(null)
+  const [analyticsResults, setAnalyticsResults] = useState<ReturnType<typeof performAnalytics> | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -98,11 +98,11 @@ export default function Home() {
 
     reader.onload = (event) => {
       try {
-        const data = event.target?.result
+        const data = event.target?.result as string
         const workbook = XLSX.read(data, { type: 'binary' })
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as (string | number)[][]
 
         if (jsonData.length > 0) {
           // Get the original headers
@@ -115,7 +115,7 @@ export default function Home() {
             return columnMappings[normalizedHeader] || columnMappings[header] || header
           })
 
-          const rows = jsonData.slice(1) as any[][]
+          const rows = jsonData.slice(1) as (string | number)[][]
           const processedData = processData(mappedHeaders, rows)
           const results = performAnalytics(processedData)
 
@@ -171,6 +171,15 @@ export default function Home() {
           />
         )}
 
+        {excelData && (
+          <>
+            <h2 className="text-2xl font-bold mt-8 mb-4">Raw Data Preview</h2>
+            <ExcelTable
+              headers={excelData.headers}
+              data={excelData.data}
+            />
+          </>
+        )}
       </div>
     </main>
   )

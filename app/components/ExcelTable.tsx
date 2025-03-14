@@ -1,22 +1,21 @@
 'use client'
 
 interface ExcelTableProps {
-    headers: string[];
-    data: any[][];
+    headers: string[]
+    data: (string | number)[][]
 }
 
-export default function ExcelTable({ headers, data }: ExcelTableProps) {
-    if (!headers.length || !data.length) return null;
-
+const ExcelTable: React.FC<ExcelTableProps> = ({ headers, data }) => {
     return (
-        <div className="overflow-x-auto w-full mt-8">
-            <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                <thead className="bg-gray-100">
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
                     <tr>
                         {headers.map((header, index) => (
                             <th
                                 key={index}
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider"
                             >
                                 {header}
                             </th>
@@ -24,14 +23,14 @@ export default function ExcelTable({ headers, data }: ExcelTableProps) {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {data.slice(0, 5).map((row, rowIndex) => (
-                        <tr key={rowIndex}>
+                    {data.map((row, rowIndex) => (
+                        <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                             {row.map((cell, cellIndex) => (
                                 <td
                                     key={cellIndex}
                                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                                 >
-                                    {cell?.toString() || ''}
+                                    {String(cell)}
                                 </td>
                             ))}
                         </tr>
@@ -39,5 +38,7 @@ export default function ExcelTable({ headers, data }: ExcelTableProps) {
                 </tbody>
             </table>
         </div>
-    );
-} 
+    )
+}
+
+export default ExcelTable 
