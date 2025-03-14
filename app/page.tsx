@@ -127,7 +127,6 @@ export default function Home() {
       }
     }
 
-    reader.readAsBinaryString(file)
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
