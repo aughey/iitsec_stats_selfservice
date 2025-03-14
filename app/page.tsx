@@ -171,15 +171,7 @@ export default function Home() {
           />
         )}
 
-        {excelData && (
-          <>
-            <h2 className="text-2xl font-bold mt-8 mb-4">Raw Data Preview</h2>
-            <ExcelTable
-              headers={excelData.headers}
-              data={excelData.data}
-            />
-          </>
-        )}
+
       </div>
     </main>
   )
