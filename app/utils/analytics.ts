@@ -67,7 +67,7 @@ export const performAnalytics = (processedData: ProcessedData) => {
 
     const orgTypeCrossTab = calculateCrossTab(records, 'Assigned_Subcommittee', 'Org_Type')
     const intlCrossTab = calculateCrossTab(records, 'International(Y/N)', 'Assigned_Subcommittee')
-    const countryCrossTab = calculateCrossTab(records, 'Origin_Country', 'Assigned_Subcommittee')
+    const countryCrossTab = calculateCrossTab(records, 'Country', 'Assigned_Subcommittee')
     const orgTypePercentages = calculatePercentages(records, 'Org_Type')
 
     return {

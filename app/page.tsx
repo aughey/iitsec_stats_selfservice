@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone'
 import * as XLSX from 'xlsx'
 import ExcelTable from './components/ExcelTable'
 import AnalyticsResults from './components/AnalyticsResults'
+import { processData, performAnalytics } from './utils/analytics'
 
 interface ExcelData {
   headers: string[]
@@ -87,88 +88,9 @@ const columnMappings: { [key: string]: string } = {
   'Main_Subcommittee_Category': 'Assigned_Subcommittee'
 }
 
-interface ProcessedData {
-  headers: string[]
-  data: any[][]
-  records: Record<string, any>[]
-}
-
 export default function Home() {
   const [excelData, setExcelData] = useState<ExcelData | null>(null)
   const [analyticsResults, setAnalyticsResults] = useState<any>(null)
-
-  const processData = (headers: string[], data: any[][]): ProcessedData => {
-    // Convert 2D array to array of objects
-    const records = data.map(row => {
-      const record: Record<string, any> = {}
-      headers.forEach((header, index) => {
-        record[header] = row[index]
-      })
-      return record
-    })
-
-    return { headers, data, records }
-  }
-
-  const calculateCrossTab = (records: Record<string, any>[], key1: string, key2: string) => {
-    const result: { [key: string]: { [key: string]: number } } = {}
-
-    records.forEach(record => {
-      const val1 = record[key1]
-      const val2 = record[key2]
-
-      if (val1 && val2) {
-        if (!result[val1]) {
-          result[val1] = {}
-        }
-        if (!result[val1][val2]) {
-          result[val1][val2] = 0
-        }
-        result[val1][val2]++
-      }
-    })
-
-    return result
-  }
-
-  const calculatePercentages = (records: Record<string, any>[], key: string) => {
-    const counts: { [key: string]: number } = {}
-    let total = 0
-
-    records.forEach(record => {
-      const value = record[key]
-      if (value) {
-        counts[value] = (counts[value] || 0) + 1
-        total++
-      }
-    })
-
-    const percentages: { [key: string]: number } = {}
-    Object.entries(counts).forEach(([key, count]) => {
-      percentages[key] = count / total
-    })
-
-    return percentages
-  }
-
-  const performAnalytics = (processedData: ProcessedData) => {
-    const { records } = processedData
-
-    // Calculate cross tabs as per postAbstractSubmissionClosureAnalytics
-    const orgTypeCrossTab = calculateCrossTab(records, 'Assigned_Subcommittee', 'Org_Type')
-    const intlCrossTab = calculateCrossTab(records, 'International(Y/N)', 'Assigned_Subcommittee')
-    const countryCrossTab = calculateCrossTab(records, 'Country', 'Assigned_Subcommittee')
-
-    // Calculate percentage submissions by org type
-    const orgTypePercentages = calculatePercentages(records, 'Org_Type')
-
-    return {
-      orgTypeCrossTab,
-      intlCrossTab,
-      countryCrossTab,
-      orgTypePercentages
-    }
-  }
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -236,7 +158,7 @@ export default function Home() {
           {isDragActive ? (
             <p className="text-blue-500">Drop the Excel file here...</p>
           ) : (
-            <p>Drag and drop the papers Excel file here, or click to select one</p>
+            <p>Drag and drop an Excel file here, or click to select one</p>
           )}
         </div>
 
@@ -249,15 +171,6 @@ export default function Home() {
           />
         )}
 
-        {/* {excelData && (
-          <>
-            <h2 className="text-2xl font-bold mt-8 mb-4">Raw Data Preview</h2>
-            <ExcelTable
-              headers={excelData.headers}
-              data={excelData.data}
-            />
-          </>
-        )} */}
       </div>
     </main>
   )
