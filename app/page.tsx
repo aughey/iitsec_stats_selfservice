@@ -101,7 +101,7 @@ export default function Home() {
         const workbook = XLSX.read(data, { type: 'binary' })
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as (string | number)[][]
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as (string | number | null)[][]
 
         if (jsonData.length > 0) {
           // Get the original headers
@@ -114,7 +114,7 @@ export default function Home() {
             return columnMappings[normalizedHeader] || columnMappings[header] || header
           })
 
-          const rows = jsonData.slice(1) as (string | number)[][]
+          const rows = jsonData.slice(1) as (string | number | null)[][]
           const processedData = processData(mappedHeaders, rows)
           const results = performAnalytics(processedData)
 

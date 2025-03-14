@@ -4,14 +4,14 @@ export interface CrossTabResult {
 
 export interface ProcessedData {
     headers: string[]
-    data: (string | number)[][]
-    records: Record<string, string | number>[]
+    data: (string | number | null)[][]
+    records: Record<string, string | number | null>[]
 }
 
-export const processData = (headers: string[], data: (string | number)[][]): ProcessedData => {
+export const processData = (headers: string[], data: (string | number | null)[][]): ProcessedData => {
     // Convert 2D array to array of objects
     const records = data.map(row => {
-        const record: Record<string, string | number> = {}
+        const record: Record<string, string | number | null> = {}
         headers.forEach((header, index) => {
             record[header] = row[index]
         })
@@ -21,35 +21,39 @@ export const processData = (headers: string[], data: (string | number)[][]): Pro
     return { headers, data, records }
 }
 
-export const calculateCrossTab = (records: Record<string, string | number>[], key1: string, key2: string): CrossTabResult => {
+export const calculateCrossTab = (records: Record<string, string | number | null>[], key1: string, key2: string): CrossTabResult => {
     const result: CrossTabResult = {}
 
     records.forEach(record => {
-        const val1 = String(record[key1])
-        const val2 = String(record[key2])
+        const val1 = record[key1]
+        const val2 = record[key2]
 
-        if (val1 && val2) {
-            if (!result[val1]) {
-                result[val1] = {}
+        if (val1 != null && val2 != null) {
+            const strVal1 = String(val1)
+            const strVal2 = String(val2)
+
+            if (!result[strVal1]) {
+                result[strVal1] = {}
             }
-            if (!result[val1][val2]) {
-                result[val1][val2] = 0
+            if (!result[strVal1][strVal2]) {
+                result[strVal1][strVal2] = 0
             }
-            result[val1][val2]++
+            result[strVal1][strVal2]++
         }
     })
 
     return result
 }
 
-export const calculatePercentages = (records: Record<string, string | number>[], key: string): { [key: string]: number } => {
+export const calculatePercentages = (records: Record<string, string | number | null>[], key: string): { [key: string]: number } => {
     const counts: { [key: string]: number } = {}
     let total = 0
 
     records.forEach(record => {
-        const value = String(record[key])
-        if (value) {
-            counts[value] = (counts[value] || 0) + 1
+        const value = record[key]
+        if (value != null) {
+            const strValue = String(value)
+            counts[strValue] = (counts[strValue] || 0) + 1
             total++
         }
     })
@@ -67,7 +71,7 @@ export const performAnalytics = (processedData: ProcessedData) => {
 
     const orgTypeCrossTab = calculateCrossTab(records, 'Assigned_Subcommittee', 'Org_Type')
     const intlCrossTab = calculateCrossTab(records, 'International(Y/N)', 'Assigned_Subcommittee')
-    const countryCrossTab = calculateCrossTab(records, 'Country', 'Assigned_Subcommittee')
+    const countryCrossTab = calculateCrossTab(records, 'Origin_Country', 'Assigned_Subcommittee')
     const orgTypePercentages = calculatePercentages(records, 'Org_Type')
 
     return {
