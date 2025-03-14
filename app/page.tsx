@@ -97,8 +97,9 @@ export default function Home() {
 
     reader.onload = (event) => {
       try {
-        const data = event.target?.result as string
-        const workbook = XLSX.read(data, { type: 'binary' })
+        const buffer = event.target?.result as ArrayBuffer
+        const uint8Array = new Uint8Array(buffer)
+        const workbook = XLSX.read(uint8Array, { type: 'array' })
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as (string | number | null)[][]
@@ -127,6 +128,7 @@ export default function Home() {
       }
     }
 
+    reader.readAsArrayBuffer(file)
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
