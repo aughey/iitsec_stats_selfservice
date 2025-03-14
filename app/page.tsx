@@ -6,10 +6,10 @@ import * as XLSX from 'xlsx'
 import AnalyticsResults from './components/AnalyticsResults'
 import { processData, performAnalytics } from './utils/analytics'
 
-interface ExcelData {
-  headers: string[]
-  data: (string | number)[][]
-}
+// interface ExcelData {
+//   headers: string[]
+//   data: (string | number)[][]
+// }
 
 // Column mappings from Python code
 const columnMappings: { [key: string]: string } = {
@@ -88,7 +88,7 @@ const columnMappings: { [key: string]: string } = {
 }
 
 export default function Home() {
-  const [excelData, setExcelData] = useState<ExcelData | null>(null)
+  ///  const [excelData, setExcelData] = useState<ExcelData | null>(null)
   const [analyticsResults, setAnalyticsResults] = useState<ReturnType<typeof performAnalytics> | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -118,7 +118,7 @@ export default function Home() {
           const processedData = processData(mappedHeaders, rows)
           const results = performAnalytics(processedData)
 
-          setExcelData({ headers: mappedHeaders, data: rows })
+          //setExcelData({ headers: mappedHeaders, data: rows })
           setAnalyticsResults(results)
         }
       } catch (error) {
