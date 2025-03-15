@@ -8,6 +8,37 @@ export interface ProcessedData {
     records: Record<string, string | number | null>[]
 }
 
+export interface CountryStats {
+    [country: string]: number
+}
+
+export interface NonAbstractSubmissionResults {
+    countryStats: CountryStats
+}
+
+export function groupByCountry(records: Record<string, string | number | null>[]): CountryStats {
+    const result: CountryStats = {}
+
+    records.forEach(record => {
+        const country = record['Country']
+        if (country != null) {
+            const strCountry = String(country)
+            result[strCountry] = (result[strCountry] || 0) + 1
+        }
+    })
+
+    return result
+}
+
+export function performAbstractSubmissionAnalytics(processedData: ProcessedData): NonAbstractSubmissionResults {
+    const { records } = processedData
+    const countryStats = groupByCountry(records)
+
+    return {
+        countryStats
+    }
+}
+
 export const processData = (headers: string[], data: (string | number | null)[][]): ProcessedData => {
     // Convert 2D array to array of objects
     const records = data.map(row => {
@@ -29,8 +60,18 @@ export const calculateCrossTab = (records: Record<string, string | number | null
         const val2 = record[key2]
 
         if (val1 != null && val2 != null) {
-            const strVal1 = String(val1)
-            const strVal2 = String(val2)
+            let strVal1 = String(val1)
+            let strVal2 = String(val2)
+            if (strVal1.length === 0) {
+                console.log('empty strVal1')
+                console.log(record)
+                strVal1 = 'unknown'
+            }
+            if (strVal2.length === 0) {
+                console.log('empty strVal2')
+                console.log(record)
+                strVal2 = 'unknown'
+            }
 
             if (!result[strVal1]) {
                 result[strVal1] = {}
@@ -52,7 +93,12 @@ export const calculatePercentages = (records: Record<string, string | number | n
     records.forEach(record => {
         const value = record[key]
         if (value != null) {
-            const strValue = String(value)
+            let strValue = String(value)
+            if (strValue.length === 0) {
+                console.log(`empty value for key ${key}`)
+                console.log(record)
+                strValue = 'unknown'
+            }
             counts[strValue] = (counts[strValue] || 0) + 1
             total++
         }

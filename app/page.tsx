@@ -4,12 +4,18 @@ import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import * as XLSX from 'xlsx'
 import AnalyticsResults from './components/AnalyticsResults'
-import { processData, performAnalytics } from './utils/analytics'
+import ExcelTable from './components/ExcelTable'
+import CountryStats from './components/CountryStats'
+import ValidationIssues from './components/ValidationIssues'
+import { processData, performAnalytics, performAbstractSubmissionAnalytics } from './utils/analytics'
+import { validateData } from './utils/validation'
+import type { ValidationResult } from './utils/validation'
+import type { NonAbstractSubmissionResults } from './utils/analytics'
 
-// interface ExcelData {
-//   headers: string[]
-//   data: (string | number)[][]
-// }
+interface ExcelData {
+  headers: string[]
+  data: (string | number | null)[][]
+}
 
 // Column mappings from Python code
 const columnMappings: { [key: string]: string } = {
@@ -88,8 +94,11 @@ const columnMappings: { [key: string]: string } = {
 }
 
 export default function Home() {
-  ///  const [excelData, setExcelData] = useState<ExcelData | null>(null)
+  const [excelData, setExcelData] = useState<ExcelData | null>(null)
   const [analyticsResults, setAnalyticsResults] = useState<ReturnType<typeof performAnalytics> | null>(null)
+  const [abstractResults, setAbstractResults] = useState<NonAbstractSubmissionResults | null>(null)
+  const [showRawData, setShowRawData] = useState(false)
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -117,10 +126,25 @@ export default function Home() {
 
           const rows = jsonData.slice(1) as (string | number | null)[][]
           const processedData = processData(mappedHeaders, rows)
-          const results = performAnalytics(processedData)
 
-          //setExcelData({ headers: mappedHeaders, data: rows })
-          setAnalyticsResults(results)
+          // Check if Assigned_Subcommittee column exists to determine which analytics to run
+          const hasAssignedSubcommittee = mappedHeaders.includes('Assigned_Subcommittee')
+
+          // Validate the data
+          const validation = validateData(mappedHeaders, processedData.records, hasAssignedSubcommittee)
+          setValidationResult(validation)
+
+          if (hasAssignedSubcommittee) {
+            const results = performAnalytics(processedData)
+            setAnalyticsResults(results)
+            setAbstractResults(null)
+          } else {
+            const results = performAbstractSubmissionAnalytics(processedData)
+            setAbstractResults(results)
+            setAnalyticsResults(null)
+          }
+
+          setExcelData({ headers: mappedHeaders, data: rows.slice(0, 5) })
         }
       } catch (error) {
         console.error('Error parsing Excel file:', error)
@@ -162,6 +186,13 @@ export default function Home() {
           )}
         </div>
 
+        {validationResult && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Data Validation</h2>
+            <ValidationIssues validationResult={validationResult} />
+          </div>
+        )}
+
         {analyticsResults && (
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4">Analytics Results</h2>
@@ -171,6 +202,34 @@ export default function Home() {
               countryCrossTab={analyticsResults.countryCrossTab}
               orgTypePercentages={analyticsResults.orgTypePercentages}
             />
+          </div>
+        )}
+
+        {abstractResults && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Submissions by Country</h2>
+            <CountryStats countryStats={abstractResults.countryStats} />
+          </div>
+        )}
+
+        {excelData && (
+          <div className="mt-8">
+            <label className="flex items-center space-x-2 mb-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showRawData}
+                onChange={(e) => setShowRawData(e.target.checked)}
+                className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">Show Raw Data Preview</span>
+            </label>
+
+            {showRawData && (
+              <>
+                <h2 className="text-2xl font-bold mb-4">Raw Data Preview (First 5 Rows)</h2>
+                <ExcelTable headers={excelData.headers} data={excelData.data} />
+              </>
+            )}
           </div>
         )}
       </div>

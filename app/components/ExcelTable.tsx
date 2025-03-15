@@ -2,7 +2,7 @@
 
 interface ExcelTableProps {
     headers: string[]
-    data: (string | number)[][]
+    data: (string | number | null)[][]
 }
 
 const ExcelTable: React.FC<ExcelTableProps> = ({ headers, data }) => {
@@ -30,7 +30,7 @@ const ExcelTable: React.FC<ExcelTableProps> = ({ headers, data }) => {
                                     key={cellIndex}
                                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                                 >
-                                    {String(cell)}
+                                    {cell === null ? '' : String(cell)}
                                 </td>
                             ))}
                         </tr>
