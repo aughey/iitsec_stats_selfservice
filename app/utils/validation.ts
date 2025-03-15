@@ -22,7 +22,6 @@ const ANALYTICS_REQUIRED_COLUMNS = [
 const ABSTRACT_REQUIRED_COLUMNS = [
     'ID',
     'Country',
-    'International(Y/N)'
 ];
 
 export function validateData(
