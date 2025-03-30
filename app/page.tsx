@@ -99,6 +99,7 @@ export default function Home() {
   const [abstractResults, setAbstractResults] = useState<NonAbstractSubmissionResults | null>(null)
   const [showRawData, setShowRawData] = useState(false)
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
+  const [isPreAbstractReview, setIsPreAbstractReview] = useState(false)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -127,21 +128,30 @@ export default function Home() {
           const rows = jsonData.slice(1) as (string | number | null)[][]
           const processedData = processData(mappedHeaders, rows)
 
-          // Check if Assigned_Subcommittee column exists to determine which analytics to run
+          // Reset all report states
+          setAnalyticsResults(null)
+          setAbstractResults(null)
+          setIsPreAbstractReview(false)
+          setValidationResult(null)
+
+          // Check which type of report we need to generate
           const hasAssignedSubcommittee = mappedHeaders.includes('Assigned_Subcommittee')
+          const hasReviewerFirstname = mappedHeaders.includes('ReviewerFirstname')
 
-          // Validate the data
-          const validation = validateData(mappedHeaders, processedData.records, hasAssignedSubcommittee)
-          setValidationResult(validation)
-
-          if (hasAssignedSubcommittee) {
-            const results = performAnalytics(processedData)
-            setAnalyticsResults(results)
-            setAbstractResults(null)
+          if (hasReviewerFirstname) {
+            setIsPreAbstractReview(true)
           } else {
-            const results = performAbstractSubmissionAnalytics(processedData)
-            setAbstractResults(results)
-            setAnalyticsResults(null)
+            // Only validate for non-pre-abstract reviewer data
+            const validation = validateData(mappedHeaders, processedData.records, hasAssignedSubcommittee)
+            setValidationResult(validation)
+
+            if (hasAssignedSubcommittee) {
+              const results = performAnalytics(processedData)
+              setAnalyticsResults(results)
+            } else {
+              const results = performAbstractSubmissionAnalytics(processedData)
+              setAbstractResults(results)
+            }
           }
 
           setExcelData({ headers: mappedHeaders, data: rows.slice(0, 5) })
@@ -190,6 +200,13 @@ export default function Home() {
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4">Data Validation</h2>
             <ValidationIssues validationResult={validationResult} />
+          </div>
+        )}
+
+        {isPreAbstractReview && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Pre-Abstract with Reviewers Report</h2>
+            <p className="text-gray-700">Pre-Abstract with Reviewers data detected. Report generation coming soon.</p>
           </div>
         )}
 
