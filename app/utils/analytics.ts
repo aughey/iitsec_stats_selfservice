@@ -160,9 +160,6 @@ export function performPreAbstractReviewAnalytics(data: ProcessedData): PreAbstr
         const meanOriginality = calculateMean(paperRecords.map(r => Number(r['Originality Rating'] || 0)));
         const meanSalesPitch = calculateMean(paperRecords.map(r => Number(r['Sales Pitch'] || 0)));
 
-        // console log the keys of r
-        console.log(Object.keys(paperRecords[0]))
-
         // Count decisions
         const numAccepts = paperRecords.filter(r => r.Acceptance === 'Accept').length;
         const numRejects = paperRecords.filter(r => r.Acceptance === 'Reject').length;
