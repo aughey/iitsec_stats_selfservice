@@ -221,6 +221,7 @@ export default function Home() {
               intlCrossTab={analyticsResults.intlCrossTab}
               countryCrossTab={analyticsResults.countryCrossTab}
               orgTypePercentages={analyticsResults.orgTypePercentages}
+              orgTypeBySubcommitteeCrossTab={analyticsResults.orgTypeBySubcommitteeCrossTab}
             />
           </div>
         )}

@@ -9,13 +9,15 @@ interface AnalyticsResultsProps {
     intlCrossTab: CrossTabResult
     countryCrossTab: CrossTabResult
     orgTypePercentages: { [key: string]: number }
+    orgTypeBySubcommitteeCrossTab: CrossTabResult
 }
 
 export default function AnalyticsResults({
     orgTypeCrossTab,
     intlCrossTab,
     countryCrossTab,
-    orgTypePercentages
+    orgTypePercentages,
+    orgTypeBySubcommitteeCrossTab
 }: AnalyticsResultsProps) {
     const renderCrossTab = (data: CrossTabResult, title: string) => {
         const allColumns = new Set<string>()
@@ -85,6 +87,7 @@ export default function AnalyticsResults({
         <div className="mt-8 space-y-8 bg-gray-50 p-6 rounded-lg">
             <h2 className="text-2xl font-bold mb-6 text-gray-900">Analytics Results</h2>
             {renderCrossTab(orgTypeCrossTab, "Submissions by Subcommittee and Organization Type")}
+            {renderCrossTab(orgTypeBySubcommitteeCrossTab, "Submissions by Organization Type and Subcommittee")}
             {renderCrossTab(intlCrossTab, "International Submissions by Subcommittee")}
             {renderCrossTab(countryCrossTab, "Submissions by Country and Subcommittee")}
             {renderPercentages()}
