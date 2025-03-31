@@ -16,6 +16,21 @@ export interface NonAbstractSubmissionResults {
     countryStats: CountryStats
 }
 
+export interface PreAbstractReviewSummary {
+    ID: string | number;
+    Title: string;
+    Birddog_Volunteer: string;
+    Assigned_Subcommittee: string;
+    Mean_Substance_Rating: number;
+    Mean_Originality_Rating: number;
+    Mean_Sales_Pitch: number;
+    Num_Accept: number;
+    Num_Reject: number;
+    Num_Discuss: number;
+    Comments_for_Birddog: string[];
+    Comments_for_Subcommittee: string[];
+}
+
 export function groupByCountry(records: Record<string, string | number | null>[]): CountryStats {
     const result: CountryStats = {}
 
@@ -63,13 +78,9 @@ export const calculateCrossTab = (records: Record<string, string | number | null
             let strVal1 = String(val1)
             let strVal2 = String(val2)
             if (strVal1.length === 0) {
-                console.log('empty strVal1')
-                console.log(record)
                 strVal1 = 'unknown'
             }
             if (strVal2.length === 0) {
-                console.log('empty strVal2')
-                console.log(record)
                 strVal2 = 'unknown'
             }
 
@@ -95,8 +106,6 @@ export const calculatePercentages = (records: Record<string, string | number | n
         if (value != null) {
             let strValue = String(value)
             if (strValue.length === 0) {
-                console.log(`empty value for key ${key}`)
-                console.log(record)
                 strValue = 'unknown'
             }
             counts[strValue] = (counts[strValue] || 0) + 1
@@ -126,4 +135,73 @@ export const performAnalytics = (processedData: ProcessedData) => {
         countryCrossTab,
         orgTypePercentages
     }
+}
+
+export function performPreAbstractReviewAnalytics(data: ProcessedData): PreAbstractReviewSummary[] {
+    const summaries: PreAbstractReviewSummary[] = [];
+    const uniqueIds = [...new Set(data.records.map(record => record.ID))];
+
+    for (const id of uniqueIds) {
+        // Get all records for this paper
+        const paperRecords = data.records.filter(record => record.ID === id);
+        if (paperRecords.length === 0) continue;
+
+        // Get the first record for basic info
+        const firstRecord = paperRecords[0];
+
+        // Get birddog volunteers
+        const birddogVolunteers = paperRecords
+            .filter(record => record.Birddog_Volunteer === 'Yes')
+            .map(record => `${record.ReviewerLastname || ''},${record.ReviewerFirstname || ''}`)
+            .join('; ');
+
+        // Calculate means - using the correct field names from Python
+        const meanSubstance = calculateMean(paperRecords.map(r => Number(r['Substance Rating'] || 0)));
+        const meanOriginality = calculateMean(paperRecords.map(r => Number(r['Originality Rating'] || 0)));
+        const meanSalesPitch = calculateMean(paperRecords.map(r => Number(r['Sales Pitch'] || 0)));
+
+        // console log the keys of r
+        console.log(Object.keys(paperRecords[0]))
+
+        // Count decisions
+        const numAccepts = paperRecords.filter(r => r.Acceptance === 'Accept').length;
+        const numRejects = paperRecords.filter(r => r.Acceptance === 'Reject').length;
+        const numDiscuss = paperRecords.filter(r => r.Acceptance === 'Discuss').length;
+
+        // Get comments
+        const birddogComments = paperRecords
+            .map(r => r.Comments_for_Birddog)
+            .filter((comment): comment is string =>
+                typeof comment === 'string' && comment !== 'nan' && comment.trim() !== ''
+            );
+
+        const subcommitteeComments = paperRecords
+            .map(r => r.Comments_for_Subcommittee)
+            .filter((comment): comment is string =>
+                typeof comment === 'string' && comment !== 'nan' && comment.trim() !== ''
+            );
+
+        summaries.push({
+            ID: id || '',
+            Title: String(firstRecord.Title || ''),
+            Birddog_Volunteer: birddogVolunteers,
+            Assigned_Subcommittee: String(firstRecord.Assigned_Subcommittee || ''),
+            Mean_Substance_Rating: Number(meanSubstance.toFixed(2)),
+            Mean_Originality_Rating: Number(meanOriginality.toFixed(2)),
+            Mean_Sales_Pitch: Number(meanSalesPitch.toFixed(2)),
+            Num_Accept: numAccepts,
+            Num_Reject: numRejects,
+            Num_Discuss: numDiscuss,
+            Comments_for_Birddog: birddogComments,
+            Comments_for_Subcommittee: subcommitteeComments
+        });
+    }
+
+    return summaries;
+}
+
+function calculateMean(numbers: number[]): number {
+    const validNumbers = numbers.filter(n => !isNaN(n));
+    if (validNumbers.length === 0) return 0;
+    return validNumbers.reduce((a, b) => a + b, 0) / validNumbers.length;
 } 

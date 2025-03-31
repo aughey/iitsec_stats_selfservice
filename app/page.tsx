@@ -7,10 +7,11 @@ import AnalyticsResults from './components/AnalyticsResults'
 import ExcelTable from './components/ExcelTable'
 import CountryStats from './components/CountryStats'
 import ValidationIssues from './components/ValidationIssues'
-import { processData, performAnalytics, performAbstractSubmissionAnalytics } from './utils/analytics'
+import PreAbstractReview from './components/PreAbstractReview'
+import { processData, performAnalytics, performAbstractSubmissionAnalytics, performPreAbstractReviewAnalytics } from './utils/analytics'
 import { validateData } from './utils/validation'
 import type { ValidationResult } from './utils/validation'
-import type { NonAbstractSubmissionResults } from './utils/analytics'
+import type { NonAbstractSubmissionResults, PreAbstractReviewSummary } from './utils/analytics'
 
 interface ExcelData {
   headers: string[]
@@ -49,6 +50,7 @@ const columnMappings: { [key: string]: string } = {
   'Final Reject': 'PDW_Rejected',
   'Final_Reject': 'PDW_Rejected',
   'Would_you_want_to_Birddog_this_Abstract_to_Paper?': 'Birddog_Volunteer',
+  "Would_you_want_to_Birddog_this_submission?": "Birddog_Volunteer",
   'Comments_for_Birddog_(for_author_feedback)': 'Comments_for_Birddog',
   'Comments_for_the_Subcommittee_(reviewers)': 'Comments_for_Subcommittee',
   'Are_you_interested_in_being_the_Birddog?': 'Birddog_Volunteer',
@@ -99,7 +101,7 @@ export default function Home() {
   const [abstractResults, setAbstractResults] = useState<NonAbstractSubmissionResults | null>(null)
   const [showRawData, setShowRawData] = useState(false)
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
-  const [isPreAbstractReview, setIsPreAbstractReview] = useState(false)
+  const [preAbstractReviewResults, setPreAbstractReviewResults] = useState<PreAbstractReviewSummary[] | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -131,7 +133,7 @@ export default function Home() {
           // Reset all report states
           setAnalyticsResults(null)
           setAbstractResults(null)
-          setIsPreAbstractReview(false)
+          setPreAbstractReviewResults(null)
           setValidationResult(null)
 
           // Check which type of report we need to generate
@@ -139,7 +141,8 @@ export default function Home() {
           const hasReviewerFirstname = mappedHeaders.includes('ReviewerFirstname')
 
           if (hasReviewerFirstname) {
-            setIsPreAbstractReview(true)
+            const results = performPreAbstractReviewAnalytics(processedData)
+            setPreAbstractReviewResults(results)
           } else {
             // Only validate for non-pre-abstract reviewer data
             const validation = validateData(mappedHeaders, processedData.records, hasAssignedSubcommittee)
@@ -203,10 +206,10 @@ export default function Home() {
           </div>
         )}
 
-        {isPreAbstractReview && (
+        {preAbstractReviewResults && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">Pre-Abstract with Reviewers Report</h2>
-            <p className="text-gray-700">Pre-Abstract with Reviewers data detected. Report generation coming soon.</p>
+            <h2 className="text-2xl font-bold mb-4">Pre-Abstract Review Summary</h2>
+            <PreAbstractReview summaries={preAbstractReviewResults} />
           </div>
         )}
 
