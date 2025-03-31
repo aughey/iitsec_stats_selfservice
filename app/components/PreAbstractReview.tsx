@@ -69,8 +69,14 @@ export default function PreAbstractReview({ summaries }: PreAbstractReviewProps)
         <div className="space-y-8">
             {Object.entries(summariesBySubcommittee).map(([subcommittee, papers]) => (
                 <details key={subcommittee} className="bg-white rounded-lg shadow overflow-hidden">
-                    <summary className="text-xl font-bold p-4 bg-gray-50 border-b cursor-pointer hover:bg-gray-100 flex justify-between items-center">
-                        <span>{subcommittee}</span>
+                    <summary className="text-xl font-bold p-4 bg-gray-50 border-b cursor-pointer hover:bg-gray-100 flex justify-between items-center text-gray-900">
+                        <div className="flex items-center gap-2">
+                            <span>{subcommittee}</span>
+                            <span className="text-sm font-normal text-gray-500">(click to expand)</span>
+                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
                         <button
                             onClick={(e) => {
                                 e.preventDefault();
