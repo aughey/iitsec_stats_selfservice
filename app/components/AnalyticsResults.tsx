@@ -47,6 +47,34 @@ export default function AnalyticsResults({
         return { columns: ['Percentage'], data }
     }
 
+    const all_tables = [
+        {
+            name: 'By Subcommittee and Org Type',
+            title: 'Submissions by Subcommittee and Organization Type',
+            data: prepareDataForTable(orgTypeCrossTab)
+        },
+        {
+            name: 'By Org Type and Subcommittee',
+            title: 'Submissions by Organization Type and Subcommittee',
+            data: prepareDataForTable(orgTypeBySubcommitteeCrossTab)
+        },
+        {
+            name: 'International Submissions',
+            title: 'International Submissions by Subcommittee',
+            data: prepareDataForTable(intlCrossTab)
+        },
+        {
+            name: 'By Country and Subcommittee',
+            title: 'Submissions by Country and Subcommittee',
+            data: prepareDataForTable(countryCrossTab)
+        },
+        {
+            name: 'By Organization Type',
+            title: 'Submissions by Organization Type',
+            data: preparePercentagesData()
+        }
+    ]
+
     const exportToExcel = () => {
         const workbook = XLSX.utils.book_new()
 
@@ -60,16 +88,7 @@ export default function AnalyticsResults({
             return [headers, ...rows]
         }
 
-        // Add each table as a separate sheet
-        const tables = [
-            { name: 'By Subcommittee and Org Type', data: prepareDataForTable(orgTypeCrossTab) },
-            { name: 'By Org Type and Subcommittee', data: prepareDataForTable(orgTypeBySubcommitteeCrossTab) },
-            { name: 'International Submissions', data: prepareDataForTable(intlCrossTab) },
-            { name: 'By Country and Subcommittee', data: prepareDataForTable(countryCrossTab) },
-            { name: 'By Organization Type', data: preparePercentagesData() }
-        ]
-
-        tables.forEach(({ name, data }) => {
+        all_tables.forEach(({ name, data }) => {
             const excelData = convertToExcelData(data.data, data.columns)
             const worksheet = XLSX.utils.aoa_to_sheet(excelData)
             XLSX.utils.book_append_sheet(workbook, worksheet, name)
@@ -90,26 +109,13 @@ export default function AnalyticsResults({
                     Export to Excel
                 </button>
             </div>
-            <DataTable
-                title="Submissions by Subcommittee and Organization Type"
-                {...prepareDataForTable(orgTypeCrossTab)}
-            />
-            <DataTable
-                title="Submissions by Organization Type and Subcommittee"
-                {...prepareDataForTable(orgTypeBySubcommitteeCrossTab)}
-            />
-            <DataTable
-                title="International Submissions by Subcommittee"
-                {...prepareDataForTable(intlCrossTab)}
-            />
-            <DataTable
-                title="Submissions by Country and Subcommittee"
-                {...prepareDataForTable(countryCrossTab)}
-            />
-            <DataTable
-                title="Submissions by Organization Type"
-                {...preparePercentagesData()}
-            />
+            {all_tables.map(({ title, data }) => (
+                <DataTable
+                    key={title}
+                    title={title}
+                    {...data}
+                />
+            ))}
         </div>
     )
 } 
