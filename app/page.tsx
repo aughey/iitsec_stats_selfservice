@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import DropZone, { ExcelData } from './components/DropZone'
+import IITSECDropZone from './components/IITSECDropZone'
+import type { ExcelData } from './components/ExcelDropZone'
 import AnalyticsResults from './components/AnalyticsResults'
 import ExcelTable from './components/ExcelTable'
 import CountryStats from './components/CountryStats'
@@ -28,7 +29,7 @@ export default function Home() {
 
         {/* Top part - DropZone component */}
         <div className="mb-8">
-          <DropZone
+          <IITSECDropZone
             onAnalyticsResults={setAnalyticsResults}
             onAbstractResults={setAbstractResults}
             onExcelData={setExcelData}
