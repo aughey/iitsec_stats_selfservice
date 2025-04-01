@@ -7,6 +7,7 @@ import ExcelTable from './components/ExcelTable'
 import CountryStats from './components/CountryStats'
 import ValidationIssues from './components/ValidationIssues'
 import PreAbstractReview from './components/PreAbstractReview'
+import Section from './components/Section'
 import type { ValidationResult } from './utils/validation'
 import type { NonAbstractSubmissionResults, PreAbstractReviewSummary } from './utils/analytics'
 
@@ -39,22 +40,19 @@ export default function Home() {
         {/* Bottom part - Results */}
         <div>
           {validationResult && (
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4">Data Validation</h2>
+            <Section title="Data Validation">
               <ValidationIssues validationResult={validationResult} />
-            </div>
+            </Section>
           )}
 
           {preAbstractReviewResults && (
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4">Pre-Abstract Review Summary</h2>
+            <Section title="Pre-Abstract Review Summary">
               <PreAbstractReview summaries={preAbstractReviewResults} />
-            </div>
+            </Section>
           )}
 
           {analyticsResults && (
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4">Analytics Results</h2>
+            <Section title="Analytics Results">
               <AnalyticsResults
                 orgTypeCrossTab={analyticsResults.orgTypeCrossTab}
                 intlCrossTab={analyticsResults.intlCrossTab}
@@ -62,18 +60,17 @@ export default function Home() {
                 orgTypePercentages={analyticsResults.orgTypePercentages}
                 orgTypeBySubcommitteeCrossTab={analyticsResults.orgTypeBySubcommitteeCrossTab}
               />
-            </div>
+            </Section>
           )}
 
           {abstractResults && (
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4">Submissions by Country</h2>
+            <Section title="Submissions by Country">
               <CountryStats countryStats={abstractResults.countryStats} />
-            </div>
+            </Section>
           )}
 
           {excelData && (
-            <div className="mt-8">
+            <Section title="Raw Data Preview">
               <label className="flex items-center space-x-2 mb-4 cursor-pointer">
                 <input
                   type="checkbox"
@@ -90,7 +87,7 @@ export default function Home() {
                   <ExcelTable headers={excelData.headers} data={excelData.data} />
                 </>
               )}
-            </div>
+            </Section>
           )}
         </div>
       </div>
