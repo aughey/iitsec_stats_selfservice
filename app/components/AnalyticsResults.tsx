@@ -49,27 +49,27 @@ export default function AnalyticsResults({
 
     const all_tables = [
         {
-            name: 'By Subcommittee and Org Type',
+            sheet_name: 'By Subcommittee and Org Type',
             title: 'Submissions by Subcommittee and Organization Type',
             data: prepareDataForTable(orgTypeCrossTab)
         },
         {
-            name: 'By Org Type and Subcommittee',
+            sheet_name: 'By Org Type and Subcommittee',
             title: 'Submissions by Organization Type and Subcommittee',
             data: prepareDataForTable(orgTypeBySubcommitteeCrossTab)
         },
         {
-            name: 'International Submissions',
+            sheet_name: 'International Submissions',
             title: 'International Submissions by Subcommittee',
             data: prepareDataForTable(intlCrossTab)
         },
         {
-            name: 'By Country and Subcommittee',
+            sheet_name: 'By Country and Subcommittee',
             title: 'Submissions by Country and Subcommittee',
             data: prepareDataForTable(countryCrossTab)
         },
         {
-            name: 'By Organization Type',
+            sheet_name: 'By Organization Type',
             title: 'Submissions by Organization Type',
             data: preparePercentagesData()
         }
@@ -88,10 +88,10 @@ export default function AnalyticsResults({
             return [headers, ...rows]
         }
 
-        all_tables.forEach(({ name, data }) => {
+        all_tables.forEach(({ sheet_name, data }) => {
             const excelData = convertToExcelData(data.data, data.columns)
             const worksheet = XLSX.utils.aoa_to_sheet(excelData)
-            XLSX.utils.book_append_sheet(workbook, worksheet, name)
+            XLSX.utils.book_append_sheet(workbook, worksheet, sheet_name)
         })
 
         // Save the file

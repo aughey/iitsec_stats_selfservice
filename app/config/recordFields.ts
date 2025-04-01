@@ -1,3 +1,18 @@
+/**
+ * Configuration file for the Birddog Review System's record fields.
+ * This file defines the structure and display properties for fields used in the review interface.
+ * It is used to:
+ * 1. Define the available fields that can be displayed in the review table
+ * 2. Specify how each field should be formatted and displayed
+ * 3. Provide consistent field names and types across the application
+ * 
+ * The fields are used in the review interface where birddog volunteers can:
+ * - View and rate submissions
+ * - Provide comments for both birddog and committee review
+ * - Track acceptance/rejection/discussion counts
+ * - View mean ratings for substance, originality, and sales pitch
+ */
+
 import React from 'react';
 
 export interface RecordField {
