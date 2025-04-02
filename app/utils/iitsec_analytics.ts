@@ -41,6 +41,43 @@ export interface AnalyticsResultData {
 }
 
 /**
+ * Interface for paper review status results
+ */
+export interface PaperReviewStatusResults {
+    subcommitteeStats: {
+        [subcommittee: string]: {
+            accepts: number;
+            rejects: number;
+            total: number;
+        }
+    };
+    orgTypeStats: {
+        [orgType: string]: {
+            accepts: number;
+            rejects: number;
+            total: number;
+        }
+    };
+    internationalStats: {
+        international: {
+            accepts: number;
+            rejects: number;
+            total: number;
+        };
+        domestic: {
+            accepts: number;
+            rejects: number;
+            total: number;
+        };
+    };
+    totalStats: {
+        accepts: number;
+        rejects: number;
+        total: number;
+    };
+}
+
+/**
  * Mapping of original column names to standardized names
  */
 export const columnMappings: { [key: string]: string } = {
@@ -110,8 +147,8 @@ export const columnMappings: { [key: string]: string } = {
     'Best Paper Winner': 'Paper_Accepted',
     'I/ITSEC 2021 BP Paper Approved': 'Paper_Accepted',
     'Review_Status': 'Accept_Reject',
-    'Paper Review Status': 'Accept_Reject',
-    'Paper_Review_Status': 'Accept_Reject',
+    'Paper Review Status': 'Paper_Accept_Reject',
+    'Paper_Review_Status': 'Paper_Accept_Reject',
     'How_would_you_label_your_submission?': 'Org_Type',
     'Initial Acceptance of Professional Development Workshop': 'Proposal_Accepted',
     'Initial Rejection of Professional Development Workshop': 'Proposal_Rejected',
@@ -241,11 +278,95 @@ export const performAnalytics = (processedData: ProcessedData): AnalyticsResultD
     }
 }
 
+/**
+ * Performs analytics on paper review status data
+ * @param processedData - Processed data containing records
+ * @returns Object containing subcommittee and total statistics for paper review status
+ */
+export function performPaperReviewStatusAnalytics(processedData: ProcessedData): PaperReviewStatusResults {
+    const { records } = processedData;
+    const subcommitteeStats: { [key: string]: { accepts: number; rejects: number; total: number } } = {};
+    const orgTypeStats: { [key: string]: { accepts: number; rejects: number; total: number } } = {};
+    const internationalStats = {
+        international: { accepts: 0, rejects: 0, total: 0 },
+        domestic: { accepts: 0, rejects: 0, total: 0 }
+    };
+    const totalStats = { accepts: 0, rejects: 0, total: 0 };
+
+    const seenRecords: { [id: string]: string } = {};
+
+    records.forEach(record => {
+        const subcommittee = String(record.Assigned_Subcommittee || '');
+        const orgType = String(record.Org_Type || '');
+        const isInternational = String(record['International(Y/N)'] || '').toLowerCase() === 'yes';
+        const status_from_record = String(record.Accept_Reject);
+        const id = String(record.ID || '');
+
+        // Split status by comma and take the first element
+        const statusArray = status_from_record.split(',');
+        const status = statusArray[0];
+
+        // Skip if we've already processed this ID
+        if (id && seenRecords[id]) {
+            // Check if status has changed - this would be an error
+            if (seenRecords[id] !== status) {
+                console.error(`Error: Status changed for ID ${id}. Previous: ${seenRecords[id]}, Current: ${status}`);
+            }
+            return;
+        }
+
+        // Mark this ID as seen with its status
+        if (id) {
+            seenRecords[id] = status;
+        }
+
+        // Update subcommittee stats
+        if (!subcommitteeStats[subcommittee]) {
+            subcommitteeStats[subcommittee] = { accepts: 0, rejects: 0, total: 0 };
+        }
+
+        // Update org type stats
+        if (!orgTypeStats[orgType]) {
+            orgTypeStats[orgType] = { accepts: 0, rejects: 0, total: 0 };
+        }
+
+        // Update international stats
+        const intlKey = isInternational ? 'international' : 'domestic';
+
+        if (status.includes('Reject')) {
+            subcommitteeStats[subcommittee].rejects++;
+            orgTypeStats[orgType].rejects++;
+            internationalStats[intlKey].rejects++;
+            totalStats.rejects++;
+        } else if (status.includes('Accept')) {
+            subcommitteeStats[subcommittee].accepts++;
+            orgTypeStats[orgType].accepts++;
+            internationalStats[intlKey].accepts++;
+            totalStats.accepts++;
+        } else {
+            console.error(`Error: Invalid status for ID ${id}. Status: ${status}`);
+        }
+
+        subcommitteeStats[subcommittee].total++;
+        orgTypeStats[orgType].total++;
+        internationalStats[intlKey].total++;
+        totalStats.total++;
+    });
+
+    return {
+        subcommitteeStats,
+        orgTypeStats,
+        internationalStats,
+        totalStats
+    };
+}
+
 export interface IITSECAnalyticsResults {
     validationResult: ValidationResult | null;
     analyticsResults: AnalyticsResultData | null;
     abstractResults: NonAbstractSubmissionResults | null;
     preAbstractReviewResults: PreAbstractReviewSummary[] | null;
+    paperReviewStatusResults: PaperReviewStatusResults | null;
     excelData: ExcelData | null;
 }
 
@@ -262,6 +383,7 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
             analyticsResults: null,
             abstractResults: null,
             preAbstractReviewResults: null,
+            paperReviewStatusResults: null,
             excelData: null
         }
     }
@@ -275,13 +397,24 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
     // Check which type of report we need to generate
     const hasAssignedSubcommittee = mappedHeaders.includes('Assigned_Subcommittee')
     const hasReviewerFirstname = mappedHeaders.includes('ReviewerFirstname')
+    const hasPaperReviewStatus = mappedHeaders.includes('Accept_Reject')
 
-    if (hasReviewerFirstname) {
+    if (hasPaperReviewStatus) {
+        return {
+            validationResult: null,
+            analyticsResults: null,
+            abstractResults: null,
+            preAbstractReviewResults: null,
+            paperReviewStatusResults: performPaperReviewStatusAnalytics(processedData),
+            excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
+        }
+    } else if (hasReviewerFirstname) {
         return {
             validationResult: null,
             analyticsResults: null,
             abstractResults: null,
             preAbstractReviewResults: performPreAbstractReviewAnalytics(processedData),
+            paperReviewStatusResults: null,
             excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
         }
     } else {
@@ -294,6 +427,7 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
                 analyticsResults: performAnalytics(processedData),
                 abstractResults: null,
                 preAbstractReviewResults: null,
+                paperReviewStatusResults: null,
                 excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
             }
         } else {
@@ -302,6 +436,7 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
                 analyticsResults: null,
                 abstractResults: performAbstractSubmissionAnalytics(processedData),
                 preAbstractReviewResults: null,
+                paperReviewStatusResults: null,
                 excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
             }
         }

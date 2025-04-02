@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 import type { ValidationResult } from '../utils/validation'
-import type { NonAbstractSubmissionResults, PreAbstractReviewSummary } from '../utils/iitsec_analytics'
+import type { NonAbstractSubmissionResults, PreAbstractReviewSummary, PaperReviewStatusResults } from '../utils/iitsec_analytics'
 import ExcelDropZone, { ExcelData } from './ExcelDropZone'
 import { processIITSECData } from '../utils/iitsec_analytics'
 import type { AnalyticsResultData } from '../utils/iitsec_analytics'
@@ -13,6 +13,7 @@ interface IITSECDropZoneProps {
     onExcelData: (data: ExcelData | null) => void
     onValidationResult: (result: ValidationResult | null) => void
     onPreAbstractReviewResults: (results: PreAbstractReviewSummary[] | null) => void
+    onPaperReviewStatusResults: (results: PaperReviewStatusResults | null) => void
 }
 
 export default function IITSECDropZone({
@@ -20,7 +21,8 @@ export default function IITSECDropZone({
     onAbstractResults,
     onExcelData,
     onValidationResult,
-    onPreAbstractReviewResults
+    onPreAbstractReviewResults,
+    onPaperReviewStatusResults
 }: IITSECDropZoneProps) {
     const handleExcelData = useCallback((data: ExcelData | null) => {
         const {
@@ -28,6 +30,7 @@ export default function IITSECDropZone({
             analyticsResults,
             abstractResults,
             preAbstractReviewResults,
+            paperReviewStatusResults,
             excelData
         } = processIITSECData(data)
 
@@ -35,8 +38,9 @@ export default function IITSECDropZone({
         onAnalyticsResults(analyticsResults)
         onAbstractResults(abstractResults)
         onPreAbstractReviewResults(preAbstractReviewResults)
+        onPaperReviewStatusResults(paperReviewStatusResults)
         onExcelData(excelData)
-    }, [onAnalyticsResults, onAbstractResults, onExcelData, onValidationResult, onPreAbstractReviewResults])
+    }, [onAnalyticsResults, onAbstractResults, onExcelData, onValidationResult, onPreAbstractReviewResults, onPaperReviewStatusResults])
 
     return <ExcelDropZone onExcelData={handleExcelData} />
 } 

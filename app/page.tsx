@@ -8,10 +8,11 @@ import ExcelTable from './components/ExcelTable'
 import CountryStats from './components/CountryStats'
 import ValidationIssues from './components/ValidationIssues'
 import PreAbstractReview from './components/PreAbstractReview'
+import PaperReviewStatusResults from './components/PaperReviewStatusResults'
 import type { AnalyticsResultData } from './utils/iitsec_analytics'
 import Section from './components/Section'
 import type { ValidationResult } from './utils/validation'
-import type { NonAbstractSubmissionResults, PreAbstractReviewSummary } from './utils/iitsec_analytics'
+import type { NonAbstractSubmissionResults, PreAbstractReviewSummary, PaperReviewStatusResults as PaperReviewStatusResultsType } from './utils/iitsec_analytics'
 
 export default function Home() {
   const [excelData, setExcelData] = useState<ExcelData | null>(null)
@@ -20,6 +21,7 @@ export default function Home() {
   const [showRawData, setShowRawData] = useState(false)
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
   const [preAbstractReviewResults, setPreAbstractReviewResults] = useState<PreAbstractReviewSummary[] | null>(null)
+  const [paperReviewStatusResults, setPaperReviewStatusResults] = useState<PaperReviewStatusResultsType | null>(null)
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-24">
@@ -36,6 +38,7 @@ export default function Home() {
             onExcelData={setExcelData}
             onValidationResult={setValidationResult}
             onPreAbstractReviewResults={setPreAbstractReviewResults}
+            onPaperReviewStatusResults={setPaperReviewStatusResults}
           />
         </div>
 
@@ -50,6 +53,12 @@ export default function Home() {
           {preAbstractReviewResults && (
             <Section title="Pre-Abstract Review Summary">
               <PreAbstractReview summaries={preAbstractReviewResults} />
+            </Section>
+          )}
+
+          {paperReviewStatusResults && (
+            <Section title="Paper Review Status">
+              <PaperReviewStatusResults results={paperReviewStatusResults} />
             </Section>
           )}
 
@@ -71,24 +80,9 @@ export default function Home() {
             </Section>
           )}
 
-          {excelData && (
-            <Section title="Raw Data Preview">
-              <label className="flex items-center space-x-2 mb-4 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showRawData}
-                  onChange={(e) => setShowRawData(e.target.checked)}
-                  className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">Show Raw Data Preview</span>
-              </label>
-
-              {showRawData && (
-                <>
-                  <h2 className="text-2xl font-bold mb-4">Raw Data Preview (First 5 Rows)</h2>
-                  <ExcelTable headers={excelData.headers} data={excelData.data} />
-                </>
-              )}
+          {showRawData && excelData && (
+            <Section title="Raw Data">
+              <ExcelTable headers={excelData.headers} data={excelData.data} />
             </Section>
           )}
         </div>
