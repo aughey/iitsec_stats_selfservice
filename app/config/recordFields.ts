@@ -13,8 +13,6 @@
  * - View mean ratings for substance, originality, and sales pitch
  */
 
-import React from 'react';
-
 export interface RecordField {
     key: string;
     displayName: string;
@@ -40,7 +38,7 @@ export function getFieldDisplayName(key: string): string {
     return field ? field.displayName : key;
 }
 
-export function formatFieldValue(field: RecordField, value: any): string {
+export function formatFieldValue(field: RecordField, value: string | number | string[] | null | undefined): string {
     if (value === null || value === undefined) return '';
 
     if (field.type === 'comment' || field.type === 'array') {

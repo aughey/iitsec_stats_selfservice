@@ -1,5 +1,5 @@
 import { PreAbstractReviewSummary } from '../utils/analytics'
-import { recordFields, getFieldDisplayName, formatFieldValue } from '../config/recordFields'
+import { recordFields, formatFieldValue } from '../config/recordFields'
 
 interface PreAbstractReviewProps {
     summaries: PreAbstractReviewSummary[]
@@ -41,7 +41,7 @@ function downloadCSV(data: string, filename: string) {
     }
 }
 
-function formatTableCell(field: typeof recordFields[0], value: any) {
+function formatTableCell(field: typeof recordFields[0], value: string | number | string[] | null | undefined) {
     if (field.type === 'comment') {
         if (!Array.isArray(value)) return '-';
         if (value.length === 0) return '-';

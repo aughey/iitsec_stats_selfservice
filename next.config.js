@@ -8,8 +8,6 @@ const nextConfig = {
     // Set the base path to match the actual hosting location
     basePath: '/iitsec_stats_selfservice',
     assetPrefix: '/iitsec_stats_selfservice/',
-    // Disable font optimization since we're using static export
-    optimizeFonts: false,
     // Configure trailing slashes for static export
     trailingSlash: true,
 }

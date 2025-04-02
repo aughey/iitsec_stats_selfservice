@@ -47,6 +47,17 @@ export interface PreAbstractReviewSummary {
 }
 
 /**
+ * Interface for comprehensive analytics results
+ */
+export interface AnalyticsResults {
+    orgTypeCrossTab: CrossTabResult;
+    intlCrossTab: CrossTabResult;
+    countryCrossTab: CrossTabResult;
+    orgTypePercentages: { [key: string]: number };
+    orgTypeBySubcommitteeCrossTab: CrossTabResult;
+}
+
+/**
  * Mapping of original column names to standardized names
  */
 export const columnMappings: { [key: string]: string } = {

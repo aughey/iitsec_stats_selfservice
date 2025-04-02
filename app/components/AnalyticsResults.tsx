@@ -15,6 +15,11 @@ interface AnalyticsResultsProps {
     orgTypeBySubcommitteeCrossTab: CrossTabResult
 }
 
+interface TableRow {
+    category: string;
+    values: { [key: string]: number | string };
+}
+
 export default function AnalyticsResults({
     orgTypeCrossTab,
     intlCrossTab,
@@ -79,7 +84,7 @@ export default function AnalyticsResults({
         const workbook = XLSX.utils.book_new()
 
         // Helper function to convert table data to Excel format
-        const convertToExcelData = (tableData: any[], columns: string[]) => {
+        const convertToExcelData = (tableData: TableRow[], columns: string[]) => {
             const headers = ['Category', ...columns]
             const rows = tableData.map(row => [
                 row.category,
