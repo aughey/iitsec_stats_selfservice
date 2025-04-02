@@ -80,6 +80,19 @@ export default function Home() {
             </Section>
           )}
 
+          <div className="flex items-center gap-2 mb-4">
+            <input
+              type="checkbox"
+              id="showRawData"
+              checked={showRawData}
+              onChange={(e) => setShowRawData(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="showRawData" className="text-sm text-gray-700">
+              Show Raw Data
+            </label>
+          </div>
+
           {showRawData && excelData && (
             <Section title="Raw Data">
               <ExcelTable headers={excelData.headers} data={excelData.data} />

@@ -394,51 +394,41 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
     const mappedHeaders = mapHeaders(headers, columnMappings)
     const processedData = processData(mappedHeaders, rows)
 
+    // Initialize results object
+    const results: IITSECAnalyticsResults = {
+        validationResult: null,
+        analyticsResults: null,
+        abstractResults: null,
+        preAbstractReviewResults: null,
+        paperReviewStatusResults: null,
+        excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
+    }
+
     // Check which type of report we need to generate
     const hasAssignedSubcommittee = mappedHeaders.includes('Assigned_Subcommittee')
     const hasReviewerFirstname = mappedHeaders.includes('ReviewerFirstname')
     const hasPaperReviewStatus = mappedHeaders.includes('Accept_Reject')
 
+    // Generate paper review status results if possible
     if (hasPaperReviewStatus) {
-        return {
-            validationResult: null,
-            analyticsResults: null,
-            abstractResults: null,
-            preAbstractReviewResults: null,
-            paperReviewStatusResults: performPaperReviewStatusAnalytics(processedData),
-            excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
-        }
-    } else if (hasReviewerFirstname) {
-        return {
-            validationResult: null,
-            analyticsResults: null,
-            abstractResults: null,
-            preAbstractReviewResults: performPreAbstractReviewAnalytics(processedData),
-            paperReviewStatusResults: null,
-            excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
-        }
-    } else {
-        // Only validate for non-pre-abstract reviewer data
-        const validation = validateData(mappedHeaders, processedData.records, hasAssignedSubcommittee)
+        results.paperReviewStatusResults = performPaperReviewStatusAnalytics(processedData)
+    }
+
+    // Generate pre-abstract review results if possible
+    if (hasReviewerFirstname) {
+        results.preAbstractReviewResults = performPreAbstractReviewAnalytics(processedData)
+    }
+
+    // Generate validation and other analytics for non-pre-abstract reviewer data
+    if (!hasReviewerFirstname) {
+        results.validationResult = validateData(mappedHeaders, processedData.records, hasAssignedSubcommittee)
 
         if (hasAssignedSubcommittee) {
-            return {
-                validationResult: validation,
-                analyticsResults: performAnalytics(processedData),
-                abstractResults: null,
-                preAbstractReviewResults: null,
-                paperReviewStatusResults: null,
-                excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
-            }
+            results.analyticsResults = performAnalytics(processedData)
         } else {
-            return {
-                validationResult: validation,
-                analyticsResults: null,
-                abstractResults: performAbstractSubmissionAnalytics(processedData),
-                preAbstractReviewResults: null,
-                paperReviewStatusResults: null,
-                excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
-            }
+            results.abstractResults = performAbstractSubmissionAnalytics(processedData)
         }
     }
+
+    return results
 } 
