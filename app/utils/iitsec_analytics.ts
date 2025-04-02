@@ -32,7 +32,7 @@ export interface PreAbstractReviewSummary {
 /**
  * Interface for comprehensive analytics results
  */
-export interface AnalyticsResults {
+export interface AnalyticsResultData {
     orgTypeCrossTab: CrossTabResult;
     intlCrossTab: CrossTabResult;
     countryCrossTab: CrossTabResult;
@@ -223,7 +223,7 @@ function calculateMean(numbers: number[]): number {
  * @param processedData - Processed data containing records
  * @returns Object containing various cross-tabulations and percentage calculations
  */
-export const performAnalytics = (processedData: ProcessedData) => {
+export const performAnalytics = (processedData: ProcessedData): AnalyticsResultData => {
     const { records } = processedData
 
     const orgTypeCrossTab = calculateCrossTab(records, 'Assigned_Subcommittee', 'Org_Type')
@@ -241,9 +241,9 @@ export const performAnalytics = (processedData: ProcessedData) => {
     }
 }
 
-interface IITSECAnalyticsResults {
+export interface IITSECAnalyticsResults {
     validationResult: ValidationResult | null;
-    analyticsResults: AnalyticsResults | null;
+    analyticsResults: AnalyticsResultData | null;
     abstractResults: NonAbstractSubmissionResults | null;
     preAbstractReviewResults: PreAbstractReviewSummary[] | null;
     excelData: ExcelData | null;

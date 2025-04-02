@@ -8,13 +8,14 @@ import ExcelTable from './components/ExcelTable'
 import CountryStats from './components/CountryStats'
 import ValidationIssues from './components/ValidationIssues'
 import PreAbstractReview from './components/PreAbstractReview'
+import type { AnalyticsResultData } from './utils/iitsec_analytics'
 import Section from './components/Section'
 import type { ValidationResult } from './utils/validation'
 import type { NonAbstractSubmissionResults, PreAbstractReviewSummary } from './utils/iitsec_analytics'
 
 export default function Home() {
   const [excelData, setExcelData] = useState<ExcelData | null>(null)
-  const [analyticsResults, setAnalyticsResults] = useState<ReturnType<typeof import('./utils/iitsec_analytics').performAnalytics> | null>(null)
+  const [analyticsResults, setAnalyticsResults] = useState<AnalyticsResultData | null>(null)
   const [abstractResults, setAbstractResults] = useState<NonAbstractSubmissionResults | null>(null)
   const [showRawData, setShowRawData] = useState(false)
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
