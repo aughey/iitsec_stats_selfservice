@@ -1,4 +1,4 @@
-import { PreAbstractReviewSummary } from '../utils/analytics'
+import { PreAbstractReviewSummary } from '../utils/iitsec_analytics'
 import { recordFields, formatFieldValue } from '../config/recordFields'
 
 interface PreAbstractReviewProps {

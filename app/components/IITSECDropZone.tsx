@@ -2,8 +2,8 @@
 
 import { useCallback } from 'react'
 import type { ValidationResult } from '../utils/validation'
-import type { NonAbstractSubmissionResults, PreAbstractReviewSummary } from '../utils/analytics'
-import { performAnalytics } from '../utils/analytics'
+import type { NonAbstractSubmissionResults, PreAbstractReviewSummary } from '../utils/iitsec_analytics'
+import { performAnalytics } from '../utils/iitsec_analytics'
 import ExcelDropZone, { ExcelData } from './ExcelDropZone'
 import { processIITSECData } from '../utils/iitsec_analytics'
 

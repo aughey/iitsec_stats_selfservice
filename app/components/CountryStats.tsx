@@ -1,9 +1,9 @@
 'use client'
 
-import type { CountryStats } from '../utils/analytics'
+import type { GroupedStats } from '../utils/analytics'
 
 interface CountryStatsProps {
-    countryStats: CountryStats
+    countryStats: GroupedStats
 }
 
 const CountryStats: React.FC<CountryStatsProps> = ({ countryStats }) => {
