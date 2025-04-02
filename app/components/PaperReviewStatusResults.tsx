@@ -10,18 +10,40 @@ interface PaperReviewStatusResultsProps {
 
 export default function PaperReviewStatusResults({ results }: PaperReviewStatusResultsProps) {
     const prepareSubcommitteeData = () => {
-        const data = Object.entries(results.subcommitteeStats).map(([subcommittee, stats]) => ({
-            category: subcommittee,
-            values: {
-                'Accepts': stats.accepts,
-                'Rejects': stats.rejects,
-                'Total': stats.total,
-                'Accept Rate': `${((stats.accepts / stats.total) * 100).toFixed(1)}%`
+        const data = Object.entries(results.subcommitteeStats).map(([subcommittee, stats]) => {
+            // Get org type breakdown for this subcommittee
+            const orgTypeBreakdown = Object.entries(stats.byOrganization).map(([orgType, orgStats]) => ({
+                type: orgType,
+                accepts: orgStats.accepts,
+                rejects: orgStats.rejects,
+                total: orgStats.total,
+                acceptRate: `${((orgStats.accepts / orgStats.total) * 100).toFixed(1)}%`
+            }));
+
+            // Get international breakdown for this subcommittee
+            const internationalBreakdown = Object.entries(stats.byInternational).map(([type, intlStats]) => ({
+                type: type.charAt(0).toUpperCase() + type.slice(1),
+                accepts: intlStats.accepts,
+                rejects: intlStats.rejects,
+                total: intlStats.total,
+                acceptRate: `${((intlStats.accepts / intlStats.total) * 100).toFixed(1)}%`
+            }));
+
+            return {
+                category: subcommittee,
+                values: {
+                    'Accepts': stats.accepts,
+                    'Rejects': stats.rejects,
+                    'Total': stats.total,
+                    'Accept Rate': `${((stats.accepts / stats.total) * 100).toFixed(1)}%`,
+                    'Org Type Breakdown': orgTypeBreakdown,
+                    'International Breakdown': internationalBreakdown
+                }
             }
-        }))
+        })
 
         return {
-            columns: ['Accepts', 'Rejects', 'Total', 'Accept Rate'],
+            columns: ['Accepts', 'Rejects', 'Total', 'Accept Rate', 'Org Type Breakdown', 'International Breakdown'],
             data
         }
     }
@@ -141,7 +163,7 @@ export default function PaperReviewStatusResults({ results }: PaperReviewStatusR
     }
 
     return (
-        <div className="mt-8 space-y-8 bg-gray-50 p-6 rounded-lg">
+        <div className="mt-8 space-y-8 bg-white p-6 rounded-lg">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Paper Review Status Results</h2>
                 <button
@@ -151,22 +173,76 @@ export default function PaperReviewStatusResults({ results }: PaperReviewStatusR
                     Export to Excel
                 </button>
             </div>
-            <DataTable
-                title="Subcommittee Statistics"
-                {...prepareSubcommitteeData()}
-            />
-            <DataTable
-                title="Organization Type Statistics"
-                {...prepareOrgTypeData()}
-            />
-            <DataTable
-                title="International vs Domestic Statistics"
-                {...prepareInternationalData()}
-            />
-            <DataTable
-                title="Overall Statistics"
-                {...prepareTotalData()}
-            />
+            <div className="space-y-8">
+                <div>
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900">Subcommittee Statistics</h3>
+                    <div className="space-y-6">
+                        {prepareSubcommitteeData().data.map((row, index) => (
+                            <div key={index} className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                                <h4 className="text-lg font-medium mb-3 text-gray-900">{row.category}</h4>
+                                <div className="grid grid-cols-4 gap-4 mb-4">
+                                    <div className="text-gray-900">
+                                        <span className="font-medium">Accepts:</span> {row.values['Accepts']}
+                                    </div>
+                                    <div className="text-gray-900">
+                                        <span className="font-medium">Rejects:</span> {row.values['Rejects']}
+                                    </div>
+                                    <div className="text-gray-900">
+                                        <span className="font-medium">Total:</span> {row.values['Total']}
+                                    </div>
+                                    <div className="text-gray-900">
+                                        <span className="font-medium">Accept Rate:</span> {row.values['Accept Rate']}
+                                    </div>
+                                </div>
+
+                                {/* Organization Type Breakdown */}
+                                <div className="mt-4">
+                                    <h5 className="font-medium mb-2 text-gray-900">By Organization Type:</h5>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {row.values['Org Type Breakdown'].map((org, idx) => (
+                                            <div key={idx} className="bg-gray-100 p-3 rounded border border-gray-200">
+                                                <div className="font-medium text-gray-900">{org.type}</div>
+                                                <div className="text-gray-700">Accepts: {org.accepts}</div>
+                                                <div className="text-gray-700">Rejects: {org.rejects}</div>
+                                                <div className="text-gray-700">Total: {org.total}</div>
+                                                <div className="text-gray-700">Accept Rate: {org.acceptRate}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* International Breakdown */}
+                                <div className="mt-4">
+                                    <h5 className="font-medium mb-2 text-gray-900">By International Status:</h5>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {row.values['International Breakdown'].map((intl, idx) => (
+                                            <div key={idx} className="bg-gray-100 p-3 rounded border border-gray-200">
+                                                <div className="font-medium text-gray-900">{intl.type}</div>
+                                                <div className="text-gray-700">Accepts: {intl.accepts}</div>
+                                                <div className="text-gray-700">Rejects: {intl.rejects}</div>
+                                                <div className="text-gray-700">Total: {intl.total}</div>
+                                                <div className="text-gray-700">Accept Rate: {intl.acceptRate}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <DataTable
+                    title="Organization Type Statistics"
+                    {...prepareOrgTypeData()}
+                />
+                <DataTable
+                    title="International vs Domestic Statistics"
+                    {...prepareInternationalData()}
+                />
+                <DataTable
+                    title="Overall Statistics"
+                    {...prepareTotalData()}
+                />
+            </div>
         </div>
     )
 } 

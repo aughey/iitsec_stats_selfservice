@@ -49,6 +49,25 @@ export interface PaperReviewStatusResults {
             accepts: number;
             rejects: number;
             total: number;
+            byOrganization: {
+                [orgType: string]: {
+                    accepts: number;
+                    rejects: number;
+                    total: number;
+                }
+            };
+            byInternational: {
+                international: {
+                    accepts: number;
+                    rejects: number;
+                    total: number;
+                };
+                domestic: {
+                    accepts: number;
+                    rejects: number;
+                    total: number;
+                };
+            };
         }
     };
     orgTypeStats: {
@@ -74,6 +93,11 @@ export interface PaperReviewStatusResults {
         accepts: number;
         rejects: number;
         total: number;
+    };
+    orgTypeBySubcommitteeCrossTab: {
+        [orgType: string]: {
+            [subcommittee: string]: number;
+        };
     };
 }
 
@@ -285,13 +309,25 @@ export const performAnalytics = (processedData: ProcessedData): AnalyticsResultD
  */
 export function performPaperReviewStatusAnalytics(processedData: ProcessedData): PaperReviewStatusResults {
     const { records } = processedData;
-    const subcommitteeStats: { [key: string]: { accepts: number; rejects: number; total: number } } = {};
+    const subcommitteeStats: {
+        [key: string]: {
+            accepts: number;
+            rejects: number;
+            total: number;
+            byOrganization: { [orgType: string]: { accepts: number; rejects: number; total: number } };
+            byInternational: {
+                international: { accepts: number; rejects: number; total: number };
+                domestic: { accepts: number; rejects: number; total: number }
+            }
+        }
+    } = {};
     const orgTypeStats: { [key: string]: { accepts: number; rejects: number; total: number } } = {};
     const internationalStats = {
         international: { accepts: 0, rejects: 0, total: 0 },
         domestic: { accepts: 0, rejects: 0, total: 0 }
     };
     const totalStats = { accepts: 0, rejects: 0, total: 0 };
+    const orgTypeBySubcommitteeCrossTab: { [orgType: string]: { [subcommittee: string]: number } } = {};
 
     const seenRecords: { [id: string]: string } = {};
 
@@ -320,34 +356,79 @@ export function performPaperReviewStatusAnalytics(processedData: ProcessedData):
             seenRecords[id] = status;
         }
 
-        // Update subcommittee stats
+        // Initialize subcommittee stats if needed
         if (!subcommitteeStats[subcommittee]) {
-            subcommitteeStats[subcommittee] = { accepts: 0, rejects: 0, total: 0 };
+            subcommitteeStats[subcommittee] = {
+                accepts: 0,
+                rejects: 0,
+                total: 0,
+                byOrganization: {},
+                byInternational: {
+                    international: { accepts: 0, rejects: 0, total: 0 },
+                    domestic: { accepts: 0, rejects: 0, total: 0 }
+                }
+            };
         }
 
-        // Update org type stats
+        // Initialize org type stats if needed
         if (!orgTypeStats[orgType]) {
             orgTypeStats[orgType] = { accepts: 0, rejects: 0, total: 0 };
         }
 
+        // Initialize org type stats for this subcommittee if needed
+        if (!subcommitteeStats[subcommittee].byOrganization[orgType]) {
+            subcommitteeStats[subcommittee].byOrganization[orgType] = { accepts: 0, rejects: 0, total: 0 };
+        }
+
+        // Update org type by subcommittee cross tab
+        if (!orgTypeBySubcommitteeCrossTab[orgType]) {
+            orgTypeBySubcommitteeCrossTab[orgType] = {};
+        }
+        if (!orgTypeBySubcommitteeCrossTab[orgType][subcommittee]) {
+            orgTypeBySubcommitteeCrossTab[orgType][subcommittee] = 0;
+        }
+        orgTypeBySubcommitteeCrossTab[orgType][subcommittee]++;
+
         // Update international stats
         const intlKey = isInternational ? 'international' : 'domestic';
 
+        // Update all stats based on status
         if (status.includes('Reject')) {
+            // Update subcommittee stats
             subcommitteeStats[subcommittee].rejects++;
+            subcommitteeStats[subcommittee].byOrganization[orgType].rejects++;
+            subcommitteeStats[subcommittee].byInternational[intlKey].rejects++;
+
+            // Update org type stats
             orgTypeStats[orgType].rejects++;
+
+            // Update international stats
             internationalStats[intlKey].rejects++;
+
+            // Update total stats
             totalStats.rejects++;
         } else if (status.includes('Accept')) {
+            // Update subcommittee stats
             subcommitteeStats[subcommittee].accepts++;
+            subcommitteeStats[subcommittee].byOrganization[orgType].accepts++;
+            subcommitteeStats[subcommittee].byInternational[intlKey].accepts++;
+
+            // Update org type stats
             orgTypeStats[orgType].accepts++;
+
+            // Update international stats
             internationalStats[intlKey].accepts++;
+
+            // Update total stats
             totalStats.accepts++;
         } else {
             console.error(`Error: Invalid status for ID ${id}. Status: ${status}`);
         }
 
+        // Update all totals
         subcommitteeStats[subcommittee].total++;
+        subcommitteeStats[subcommittee].byOrganization[orgType].total++;
+        subcommitteeStats[subcommittee].byInternational[intlKey].total++;
         orgTypeStats[orgType].total++;
         internationalStats[intlKey].total++;
         totalStats.total++;
@@ -357,7 +438,8 @@ export function performPaperReviewStatusAnalytics(processedData: ProcessedData):
         subcommitteeStats,
         orgTypeStats,
         internationalStats,
-        totalStats
+        totalStats,
+        orgTypeBySubcommitteeCrossTab
     };
 }
 
