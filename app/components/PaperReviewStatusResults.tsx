@@ -15,6 +15,17 @@ interface StatsDisplayProps {
     acceptRate: string
 }
 
+interface GroupedStatusProps {
+    title: string
+    items: Array<{
+        type: string
+        accepts: number
+        rejects: number
+        total: number
+        acceptRate: string
+    }>
+}
+
 function StatsDisplay({ accepts, rejects, total, acceptRate }: StatsDisplayProps) {
     return (
         <div className="text-gray-700 space-x-4">
@@ -22,6 +33,27 @@ function StatsDisplay({ accepts, rejects, total, acceptRate }: StatsDisplayProps
             <span><span className="font-medium">Rejects:</span> {rejects}</span>
             <span><span className="font-medium">Total:</span> {total}</span>
             <span><span className="font-medium">Accept Rate:</span> {acceptRate}</span>
+        </div>
+    )
+}
+
+function GroupedStatus({ title, items }: GroupedStatusProps) {
+    return (
+        <div className="mt-4">
+            <h5 className="font-medium mb-2 text-gray-900">{title}:</h5>
+            <div className="space-y-4">
+                {items.map((item, idx) => (
+                    <div key={idx} className="bg-gray-100 p-3 rounded border border-gray-200">
+                        <div className="font-medium text-gray-900">{item.type}</div>
+                        <StatsDisplay
+                            accepts={item.accepts}
+                            rejects={item.rejects}
+                            total={item.total}
+                            acceptRate={item.acceptRate}
+                        />
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }
@@ -205,41 +237,15 @@ export default function PaperReviewStatusResults({ results }: PaperReviewStatusR
                                     acceptRate={row.values['Accept Rate']}
                                 />
 
-                                {/* Organization Type Breakdown */}
-                                <div className="mt-4">
-                                    <h5 className="font-medium mb-2 text-gray-900">By Organization Type:</h5>
-                                    <div className="space-y-4">
-                                        {row.values['Org Type Breakdown'].map((org, idx) => (
-                                            <div key={idx} className="bg-gray-100 p-3 rounded border border-gray-200">
-                                                <div className="font-medium text-gray-900">{org.type}</div>
-                                                <StatsDisplay
-                                                    accepts={org.accepts}
-                                                    rejects={org.rejects}
-                                                    total={org.total}
-                                                    acceptRate={org.acceptRate}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                <GroupedStatus
+                                    title="By Organization Type"
+                                    items={row.values['Org Type Breakdown']}
+                                />
 
-                                {/* International Breakdown */}
-                                <div className="mt-4">
-                                    <h5 className="font-medium mb-2 text-gray-900">By International Status:</h5>
-                                    <div className="space-y-4">
-                                        {row.values['International Breakdown'].map((intl, idx) => (
-                                            <div key={idx} className="bg-gray-100 p-3 rounded border border-gray-200">
-                                                <div className="font-medium text-gray-900">{intl.type}</div>
-                                                <StatsDisplay
-                                                    accepts={intl.accepts}
-                                                    rejects={intl.rejects}
-                                                    total={intl.total}
-                                                    acceptRate={intl.acceptRate}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                <GroupedStatus
+                                    title="By International Status"
+                                    items={row.values['International Breakdown']}
+                                />
                             </div>
                         ))}
                     </div>
