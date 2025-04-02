@@ -71,21 +71,25 @@ export default function PreAbstractReview({ summaries }: PreAbstractReviewProps)
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-900">Pre-Abstract Review Results</h2>
-                <button
-                    onClick={() => {
-                        const csv = convertToCSV(summaries)
-                        downloadCSV(csv, 'pre_abstract_review.csv')
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                    Export CSV
-                </button>
             </div>
 
             {Object.entries(summariesBySubcommittee).map(([subcommittee, papers]) => (
                 <details key={subcommittee} className="bg-white rounded-lg shadow overflow-hidden">
                     <summary className="px-6 py-4 bg-gray-50 cursor-pointer hover:bg-gray-100 flex items-center justify-between group">
-                        <h3 className="text-lg font-semibold text-gray-900">{subcommittee}</h3>
+                        <div className="flex items-center gap-4">
+                            <h3 className="text-lg font-semibold text-gray-900">{subcommittee}</h3>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const csv = convertToCSV(papers)
+                                    downloadCSV(csv, `pre_abstract_review_${subcommittee.toLowerCase().replace(/\s+/g, '_')}.csv`)
+                                }}
+                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                            >
+                                Export CSV
+                            </button>
+                        </div>
                         <svg className="w-5 h-5 text-gray-500 transform transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
