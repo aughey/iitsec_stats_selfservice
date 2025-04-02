@@ -8,6 +8,24 @@ interface PaperReviewStatusResultsProps {
     results: PaperReviewStatusResults
 }
 
+interface StatsDisplayProps {
+    accepts: number
+    rejects: number
+    total: number
+    acceptRate: string
+}
+
+function StatsDisplay({ accepts, rejects, total, acceptRate }: StatsDisplayProps) {
+    return (
+        <div className="text-gray-700 space-x-4">
+            <span><span className="font-medium">Accepts:</span> {accepts}</span>
+            <span><span className="font-medium">Rejects:</span> {rejects}</span>
+            <span><span className="font-medium">Total:</span> {total}</span>
+            <span><span className="font-medium">Accept Rate:</span> {acceptRate}</span>
+        </div>
+    )
+}
+
 export default function PaperReviewStatusResults({ results }: PaperReviewStatusResultsProps) {
     const prepareSubcommitteeData = () => {
         const data = Object.entries(results.subcommitteeStats).map(([subcommittee, stats]) => {
@@ -180,32 +198,26 @@ export default function PaperReviewStatusResults({ results }: PaperReviewStatusR
                         {prepareSubcommitteeData().data.map((row, index) => (
                             <div key={index} className="bg-white p-4 rounded-lg shadow border border-gray-200">
                                 <h4 className="text-lg font-medium mb-3 text-gray-900">{row.category}</h4>
-                                <div className="grid grid-cols-4 gap-4 mb-4">
-                                    <div className="text-gray-900">
-                                        <span className="font-medium">Accepts:</span> {row.values['Accepts']}
-                                    </div>
-                                    <div className="text-gray-900">
-                                        <span className="font-medium">Rejects:</span> {row.values['Rejects']}
-                                    </div>
-                                    <div className="text-gray-900">
-                                        <span className="font-medium">Total:</span> {row.values['Total']}
-                                    </div>
-                                    <div className="text-gray-900">
-                                        <span className="font-medium">Accept Rate:</span> {row.values['Accept Rate']}
-                                    </div>
-                                </div>
+                                <StatsDisplay
+                                    accepts={row.values['Accepts']}
+                                    rejects={row.values['Rejects']}
+                                    total={row.values['Total']}
+                                    acceptRate={row.values['Accept Rate']}
+                                />
 
                                 {/* Organization Type Breakdown */}
                                 <div className="mt-4">
                                     <h5 className="font-medium mb-2 text-gray-900">By Organization Type:</h5>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-4">
                                         {row.values['Org Type Breakdown'].map((org, idx) => (
                                             <div key={idx} className="bg-gray-100 p-3 rounded border border-gray-200">
                                                 <div className="font-medium text-gray-900">{org.type}</div>
-                                                <div className="text-gray-700">Accepts: {org.accepts}</div>
-                                                <div className="text-gray-700">Rejects: {org.rejects}</div>
-                                                <div className="text-gray-700">Total: {org.total}</div>
-                                                <div className="text-gray-700">Accept Rate: {org.acceptRate}</div>
+                                                <StatsDisplay
+                                                    accepts={org.accepts}
+                                                    rejects={org.rejects}
+                                                    total={org.total}
+                                                    acceptRate={org.acceptRate}
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -214,14 +226,16 @@ export default function PaperReviewStatusResults({ results }: PaperReviewStatusR
                                 {/* International Breakdown */}
                                 <div className="mt-4">
                                     <h5 className="font-medium mb-2 text-gray-900">By International Status:</h5>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-4">
                                         {row.values['International Breakdown'].map((intl, idx) => (
                                             <div key={idx} className="bg-gray-100 p-3 rounded border border-gray-200">
                                                 <div className="font-medium text-gray-900">{intl.type}</div>
-                                                <div className="text-gray-700">Accepts: {intl.accepts}</div>
-                                                <div className="text-gray-700">Rejects: {intl.rejects}</div>
-                                                <div className="text-gray-700">Total: {intl.total}</div>
-                                                <div className="text-gray-700">Accept Rate: {intl.acceptRate}</div>
+                                                <StatsDisplay
+                                                    accepts={intl.accepts}
+                                                    rejects={intl.rejects}
+                                                    total={intl.total}
+                                                    acceptRate={intl.acceptRate}
+                                                />
                                             </div>
                                         ))}
                                     </div>
