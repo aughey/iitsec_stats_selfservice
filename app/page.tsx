@@ -57,7 +57,7 @@ export default function Home() {
           )}
 
           {paperReviewStatusResults && (
-            <Section title="Paper Review Status">
+            <Section title="Post Abstract Review Status">
               <PaperReviewStatusResults results={paperReviewStatusResults} />
             </Section>
           )}
