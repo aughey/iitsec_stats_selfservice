@@ -33,6 +33,20 @@ export const recordFields: RecordField[] = [
     { key: 'Comments_for_Subcommittee', displayName: 'Committee Comments', type: 'comment' }
 ];
 
+export const tutorialRecordFields: RecordField[] = [
+    { key: 'ID', displayName: 'ID', type: 'string' },
+    { key: 'Title', displayName: 'Title', type: 'string' },
+    { key: 'Birddog_Volunteer', displayName: 'Birddog Volunteer', type: 'string' },
+    { key: 'Mean_Alignment', displayName: 'Mean Alignment', type: 'number' },
+    { key: 'Mean_Learning_Objectives', displayName: 'Mean Learning Objectives', type: 'number' },
+    { key: 'Mean_Outline_Content', displayName: 'Mean Outline & Content', type: 'number' },
+    { key: 'Num_Sales_Pitch', displayName: 'Sales Pitch Count', type: 'number' },
+    { key: 'Num_Accept', displayName: 'Accept', type: 'number' },
+    { key: 'Num_Reject', displayName: 'Reject', type: 'number' },
+    { key: 'Num_Discuss', displayName: 'Discuss', type: 'number' },
+    { key: 'Comments', displayName: 'Comments', type: 'comment' }
+];
+
 export function getFieldDisplayName(key: string): string {
     const field = recordFields.find(f => f.key === key);
     return field ? field.displayName : key;

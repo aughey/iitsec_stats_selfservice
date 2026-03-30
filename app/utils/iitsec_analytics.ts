@@ -30,6 +30,23 @@ export interface PreAbstractReviewSummary {
 }
 
 /**
+ * Interface for tutorial pre-abstract review summary data
+ */
+export interface TutorialPreAbstractReviewSummary {
+    ID: string | number;
+    Title: string;
+    Birddog_Volunteer: string;
+    Mean_Alignment: number;
+    Mean_Learning_Objectives: number;
+    Mean_Outline_Content: number;
+    Num_Sales_Pitch: number;
+    Num_Accept: number;
+    Num_Reject: number;
+    Num_Discuss: number;
+    Comments: string[];
+}
+
+/**
  * Interface for comprehensive analytics results
  */
 export interface AnalyticsResultData {
@@ -177,7 +194,8 @@ export const columnMappings: { [key: string]: string } = {
     'Initial Acceptance of Professional Development Workshop': 'Proposal_Accepted',
     'Initial Rejection of Professional Development Workshop': 'Proposal_Rejected',
     'Initial Rejection of Professional Dev Workshop': 'Proposal_Rejected',
-    'Main_Subcommittee_Category': 'Assigned_Subcommittee'
+    'Main_Subcommittee_Category': 'Assigned_Subcommittee',
+    'Please_provide_your_previous_tutorial_number_for_reference_(if_presented_in_2023/2024)._If_you_presented_this_topic_at_other_conference_please_list_conference_date_location_and_if_published.': 'Past_Year_Tutorial_Number'
 }
 
 /**
@@ -277,6 +295,65 @@ function calculateMean(numbers: number[]): number {
     const validNumbers = numbers.filter(n => !isNaN(n));
     if (validNumbers.length === 0) return 0;
     return validNumbers.reduce((a, b) => a + b, 0) / validNumbers.length;
+}
+
+/**
+ * Performs analytics on tutorial pre-abstract review data
+ * @param data - Processed data containing tutorial review records
+ * @returns Array of TutorialPreAbstractReviewSummary objects
+ */
+export function performTutorialPreAbstractReviewAnalytics(data: ProcessedData): TutorialPreAbstractReviewSummary[] {
+    const summaries: TutorialPreAbstractReviewSummary[] = [];
+    const uniqueIds = [...new Set(data.records.map(record => record.ID))];
+
+    for (const id of uniqueIds) {
+        const tutRecords = data.records.filter(record => record.ID === id);
+        if (tutRecords.length === 0) continue;
+
+        const firstRecord = tutRecords[0];
+
+        // Get birddog volunteers
+        const birddogVolunteers = tutRecords
+            .filter(record => record.Birddog_Volunteer === 'Yes')
+            .map(record => `${record.ReviewerLastname || ''}, ${record.ReviewerFirstname || ''}`)
+            .join('; ');
+
+        // Calculate means for tutorial-specific metrics
+        const meanAlignment = calculateMean(tutRecords.map(r => Number(r['Mean_Alignment'] || 0)));
+        const meanLearningObj = calculateMean(tutRecords.map(r => Number(r['Mean_Learning_Objectives'] || 0)));
+        const meanOutline = calculateMean(tutRecords.map(r => Number(r['Mean_Outline_Content'] || 0)));
+
+        // Count sales pitch "Yes" votes
+        const numSalesPitch = tutRecords.filter(r => r.Num_Sales_Pitch === 'Yes').length;
+
+        // Count decisions
+        const numAccepts = tutRecords.filter(r => r.Acceptance === 'Accept').length;
+        const numRejects = tutRecords.filter(r => r.Acceptance === 'Reject').length;
+        const numDiscuss = tutRecords.filter(r => r.Acceptance === 'Discuss').length;
+
+        // Get comments
+        const comments = tutRecords
+            .map(r => r.Comments)
+            .filter((comment): comment is string =>
+                typeof comment === 'string' && comment !== 'nan' && comment.trim() !== ''
+            );
+
+        summaries.push({
+            ID: id || '',
+            Title: String(firstRecord.Title || ''),
+            Birddog_Volunteer: birddogVolunteers,
+            Mean_Alignment: Number(meanAlignment.toFixed(2)),
+            Mean_Learning_Objectives: Number(meanLearningObj.toFixed(2)),
+            Mean_Outline_Content: Number(meanOutline.toFixed(2)),
+            Num_Sales_Pitch: numSalesPitch,
+            Num_Accept: numAccepts,
+            Num_Reject: numRejects,
+            Num_Discuss: numDiscuss,
+            Comments: comments
+        });
+    }
+
+    return summaries;
 }
 
 /**
@@ -448,6 +525,7 @@ export interface IITSECAnalyticsResults {
     analyticsResults: AnalyticsResultData | null;
     abstractResults: NonAbstractSubmissionResults | null;
     preAbstractReviewResults: PreAbstractReviewSummary[] | null;
+    tutorialPreAbstractReviewResults: TutorialPreAbstractReviewSummary[] | null;
     paperReviewStatusResults: PaperReviewStatusResults | null;
     excelData: ExcelData | null;
 }
@@ -465,6 +543,7 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
             analyticsResults: null,
             abstractResults: null,
             preAbstractReviewResults: null,
+            tutorialPreAbstractReviewResults: null,
             paperReviewStatusResults: null,
             excelData: null
         }
@@ -482,6 +561,7 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
         analyticsResults: null,
         abstractResults: null,
         preAbstractReviewResults: null,
+        tutorialPreAbstractReviewResults: null,
         paperReviewStatusResults: null,
         excelData: { headers: mappedHeaders, data: rows.slice(0, 5) }
     }
@@ -490,6 +570,7 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
     const hasAssignedSubcommittee = mappedHeaders.includes('Assigned_Subcommittee')
     const hasReviewerFirstname = mappedHeaders.includes('ReviewerFirstname')
     const hasPaperReviewStatus = mappedHeaders.includes('Accept_Reject')
+    const hasTutorialAlignment = mappedHeaders.includes('Mean_Alignment')
 
     // Generate paper review status results if possible
     if (hasPaperReviewStatus) {
@@ -497,7 +578,9 @@ export function processIITSECData(data: ExcelData | null): IITSECAnalyticsResult
     }
 
     // Generate pre-abstract review results if possible
-    if (hasReviewerFirstname) {
+    if (hasReviewerFirstname && hasTutorialAlignment) {
+        results.tutorialPreAbstractReviewResults = performTutorialPreAbstractReviewAnalytics(processedData)
+    } else if (hasReviewerFirstname) {
         results.preAbstractReviewResults = performPreAbstractReviewAnalytics(processedData)
     }
 

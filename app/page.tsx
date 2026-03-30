@@ -8,11 +8,12 @@ import ExcelTable from './components/ExcelTable'
 import CountryStats from './components/CountryStats'
 import ValidationIssues from './components/ValidationIssues'
 import PreAbstractReview from './components/PreAbstractReview'
+import TutorialPreAbstractReview from './components/TutorialPreAbstractReview'
 import PaperReviewStatusResults from './components/PaperReviewStatusResults'
 import type { AnalyticsResultData } from './utils/iitsec_analytics'
 import Section from './components/Section'
 import type { ValidationResult } from './utils/validation'
-import type { NonAbstractSubmissionResults, PreAbstractReviewSummary, PaperReviewStatusResults as PaperReviewStatusResultsType } from './utils/iitsec_analytics'
+import type { NonAbstractSubmissionResults, PreAbstractReviewSummary, TutorialPreAbstractReviewSummary, PaperReviewStatusResults as PaperReviewStatusResultsType } from './utils/iitsec_analytics'
 
 export default function Home() {
   const [excelData, setExcelData] = useState<ExcelData | null>(null)
@@ -21,6 +22,7 @@ export default function Home() {
   const [showRawData, setShowRawData] = useState(false)
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
   const [preAbstractReviewResults, setPreAbstractReviewResults] = useState<PreAbstractReviewSummary[] | null>(null)
+  const [tutorialPreAbstractReviewResults, setTutorialPreAbstractReviewResults] = useState<TutorialPreAbstractReviewSummary[] | null>(null)
   const [paperReviewStatusResults, setPaperReviewStatusResults] = useState<PaperReviewStatusResultsType | null>(null)
 
   return (
@@ -38,6 +40,7 @@ export default function Home() {
             onExcelData={setExcelData}
             onValidationResult={setValidationResult}
             onPreAbstractReviewResults={setPreAbstractReviewResults}
+            onTutorialPreAbstractReviewResults={setTutorialPreAbstractReviewResults}
             onPaperReviewStatusResults={setPaperReviewStatusResults}
           />
         </div>
@@ -53,6 +56,12 @@ export default function Home() {
           {preAbstractReviewResults && (
             <Section title="Pre-Abstract Review Summary">
               <PreAbstractReview summaries={preAbstractReviewResults} />
+            </Section>
+          )}
+
+          {tutorialPreAbstractReviewResults && (
+            <Section title="Tutorial Pre-Abstract Review Summary">
+              <TutorialPreAbstractReview summaries={tutorialPreAbstractReviewResults} />
             </Section>
           )}
 
