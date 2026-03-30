@@ -195,7 +195,8 @@ export const columnMappings: { [key: string]: string } = {
     'Initial Rejection of Professional Development Workshop': 'Proposal_Rejected',
     'Initial Rejection of Professional Dev Workshop': 'Proposal_Rejected',
     'Main_Subcommittee_Category': 'Assigned_Subcommittee',
-    'Please_provide_your_previous_tutorial_number_for_reference_(if_presented_in_2023/2024)._If_you_presented_this_topic_at_other_conference_please_list_conference_date_location_and_if_published.': 'Past_Year_Tutorial_Number'
+    'Please_provide_your_previous_tutorial_number_for_reference_(if_presented_in_2023/2024)._If_you_presented_this_topic_at_other_conference_please_list_conference_date_location_and_if_published.': 'Past_Year_Tutorial_Number',
+    'Please_provide_your_previous_tutorial_number_for_reference_(if_presented_in_2023/2024/2025)._If_you_presented_this_topic_at_other_conference_please_list_conference_date_location_and_if_published.': 'Past_Year_Tutorial_Number'
 }
 
 /**
