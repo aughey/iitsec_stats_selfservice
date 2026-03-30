@@ -8,16 +8,18 @@ interface PreAbstractReviewProps {
 function convertToCSV(papers: PreAbstractReviewSummary[]): string {
     // Define headers using record fields
     const headers = recordFields
-        .filter(field => field.type !== 'comment')
         .map(field => field.displayName)
         .join(',')
 
     // Convert each paper to CSV row
     const rows = papers.map(paper => {
         return recordFields
-            .filter(field => field.type !== 'comment')
             .map(field => {
                 const value = paper[field.key as keyof PreAbstractReviewSummary]
+                if (field.type === 'comment') {
+                    const comments = Array.isArray(value) ? value.join('; ') : ''
+                    return `"${comments.replace(/"/g, '""')}"`
+                }
                 const formattedValue = formatFieldValue(field, value)
                 return field.type === 'string' ? `"${String(formattedValue).replace(/"/g, '""')}"` : formattedValue
             })
